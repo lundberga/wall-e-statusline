@@ -37,8 +37,8 @@ const WEATHER_WHITE= '\x1b[38;5;245m';  // weather description
 
 const W = process.stdout.columns || 72;
 
-function sep() {
-  return SEP_COLOR + '─'.repeat(41) + RESET;
+function sep(width) {
+  return SEP_COLOR + '─'.repeat(width) + RESET;
 }
 
 // Strip ANSI escape codes to measure visible character width
@@ -413,9 +413,6 @@ async function main() {
   const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   const lines   = [];
 
-  // ── Separator top
-  lines.push(sep());
-
   // ── Title: — | wall-e STATUSLINE |
   lines.push(
     `  ` + DIM_GRAY + `—` + RESET + ` ` + DIM_GRAY + `|` + RESET + ` ` +
@@ -532,10 +529,12 @@ async function main() {
   if (tokensLine) lines.push(tokensLine);
   if (costsLine)  lines.push(costsLine);
 
-  // ── Separator bottom
-  lines.push(sep());
+  // ── Measure content width and wrap with matching separators
+  const maxWidth = Math.max(...lines.map(l => visLen(l)));
+  const s = sep(maxWidth);
+  const output = [s, ...lines, s];
 
-  process.stdout.write(lines.join('\n') + '\n');
+  process.stdout.write(output.join('\n') + '\n');
   process.exit(0);
 }
 
