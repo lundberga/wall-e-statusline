@@ -219,7 +219,7 @@ async function getWeather(cfg) {
     const city = encodeURIComponent(cfg.city || 'Stockholm');
     const body = await httpGet(`https://wttr.in/${city}?format=j1`);
     const d = JSON.parse(body);
-    const current = d.current_condition[0];
+    const current = (d.data || d).current_condition[0];
     const result = { temp: current.temp_C, desc: current.weatherDesc[0].value };
     cacheSet(cacheFile, result);
     return result;
