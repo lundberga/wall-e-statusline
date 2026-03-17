@@ -1,0 +1,6 @@
+{
+  "city": "Stockholm",
+  "country": "SE",
+  "budgets": { "daily": 5.00, "weekly": 25.00, "monthly": 100.00 },
+  "week_reset_day": "FRI"
+}

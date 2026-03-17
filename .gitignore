@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.json.bak
+.env
+config.local.json
+.claude/
