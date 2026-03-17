@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # wall-e STATUSLINE — one-line installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/lundberga/wall-e-statusline/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/lundberga/wall-e-statusline/master/install.sh | bash
 
 set -e
 

@@ -26,10 +26,11 @@ const LABEL_GRAY   = '\x1b[38;5;245m';   // all LABEL: text
 const PLAIN_WHITE  = '\x1b[97m';         // regular values
 const BRIGHT_WHITE = '\x1b[97m';         // title + location city (bold)
 const BRAND_CYAN   = '\x1b[38;5;38m';   // brand, model, PWD name, author
-const LIGHT_CYAN   = '\x1b[36m';         // PWD bullet only
+const LIGHT_CYAN   = '\x1b[38;2;139;233;253m'; // PWD bullet only
+const SKL_CYAN     = '\x1b[38;2;79;195;247m';  // Skills ◆ and MCPs ○
 const PURPLE       = '\x1b[38;5;135m';  // CONTEXT ●, Plugins ●
 const AMBER        = '\x1b[38;5;214m';  // USAGE ◆, Quote ◆
-const YELLOW_GREEN = '\x1b[38;5;154m';  // percentages, all $ amounts
+const YELLOW_GREEN = '\x1b[38;2;241;250;140m';  // percentages, all $ amounts
 const WEATHER_WHITE= '\x1b[38;5;245m';  // weather description
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -440,27 +441,46 @@ async function main() {
   );
 
   // ── CONTEXT row  ● purple
+  lines.push('');
   lines.push(
     PURPLE + `●` + RESET + ` ` + lbl('CONTEXT:') + ` ` +
     DIM_GRAY + `[` + RESET + buildContextBar(ctx.usedPct) + DIM_GRAY + `]` + RESET + ` ` +
     ctxColor(ctx.usedPct) + `[` + ctx.usedPct + `%]` + RESET
   );
 
+  lines.push('');
+
   // ── USAGE row  ◆ amber
   if (costs) {
     const { daily = 5, weekly = 25 } = cfg.budgets;
     const dailyPct  = daily  ? Math.min(999, Math.floor(costs.todayCost / daily  * 100)) : 0;
     const weeklyPct = weekly ? Math.min(999, Math.floor(costs.weekCost  / weekly * 100)) : 0;
+    // Next hourly reset: top of next hour
+    const nextHour = new Date(now);
+    nextHour.setHours(nextHour.getHours() + 1, 0, 0, 0);
+    const hReset = `↻ ${String(nextHour.getHours()).padStart(2,'0')}:00`;
+
+    // Next weekly reset: next occurrence of configured reset day at 00:00
+    const RESET_DAY_MAP = { SUN:0, MON:1, TUE:2, WED:3, THU:4, FRI:5, SAT:6 };
+    const DAY_ABBR = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const resetDayNum = RESET_DAY_MAP[(cfg.week_reset_day || 'FRI').toUpperCase()] ?? 5;
+    const todayDayNum = now.getDay();
+    let daysUntil = (resetDayNum - todayDayNum + 7) % 7;
+    if (daysUntil === 0) daysUntil = 7;
+    const wReset = `↻ ${DAY_ABBR[resetDayNum]} 00:00`;
+
     lines.push(
       AMBER + `◆` + RESET + ` ` + lbl('USAGE: ') +
-      lbl('$H: ') + YELLOW_GREEN + dailyPct + `%` + RESET +
-      ` ` + LABEL_GRAY + `($` + costs.hourlyBurn.toFixed(2) + `/hr)` + RESET +
+      lbl('5H: ') + YELLOW_GREEN + dailyPct + `%` + RESET +
+      ` ` + DIM_GRAY + hReset + RESET +
       pipe() + lbl('WK: ') + YELLOW_GREEN + weeklyPct + `%` + RESET +
-      `   ` + lbl(`$${cfg.week_reset_day}: `) + YELLOW_GREEN + `$` + costs.weekCost.toFixed(2) + RESET
+      ` ` + DIM_GRAY + wReset + RESET
     );
   } else {
     lines.push(`${AMBER}◆${RESET} ${lbl('USAGE:')} ${LABEL_GRAY}no data${RESET}`);
   }
+
+  lines.push('');
 
   // ── PWD + git row  ◆ light cyan
   lines.push(
@@ -476,13 +496,13 @@ async function main() {
   if (costs) {
     const ratioStr = costs.ratio ? costs.ratio.toLocaleString() : '--';
     tokensLine =
-      lbl('TOKENS:') + ` ` +
+      YELLOW_GREEN + 'TOKENS:' + RESET + ` ` +
       lbl('Today: ')    + val(costs.todayTokens.toLocaleString()) +
       pipe() + lbl('Month: ')   + val(costs.monthTokens.toLocaleString()) +
       pipe() + lbl('Last Mo: ') + val(costs.lastMonthTok.toLocaleString()) +
       pipe() + lbl('Total: ')   + val(costs.totalTokens.toLocaleString());
     costsLine =
-      lbl('COSTS: ') + ` ` +
+      YELLOW_GREEN + 'COSTS: ' + RESET + ` ` +
       lbl('Today: ')    + YELLOW_GREEN + `$` + costs.todayCost.toFixed(2) + RESET +
       pipe() + lbl('Month: ')   + YELLOW_GREEN + `$` + costs.monthCost.toFixed(2) + RESET +
       pipe() + lbl('Last Mo: ') + YELLOW_GREEN + `$` + costs.lastMonthCost.toFixed(2) + RESET +
@@ -490,18 +510,21 @@ async function main() {
       pipe() + lbl('Total: ')   + YELLOW_GREEN + `$` + costs.totalCost.toFixed(2) + RESET;
   }
 
+  lines.push('');
+
   // ── Quote row  ◆ amber  (wraps to fit within COSTS line width)
   const quoteMaxWidth = costsLine ? visLen(costsLine) : 41;
   for (const ql of wrapQuote(quoteText, quoteAuthor, quoteMaxWidth)) lines.push(ql);
 
+  lines.push('');
+
   // ── Plugins row  ● purple
   const mcpTotal = cl.mcpGlobal + cl.mcpLocal;
   lines.push(
-    PURPLE + `●` + RESET + ` ` +
-    lbl('Plugins: ') + val(String(cl.plugins)) +
-    pipe() + lbl('Skills: ')  + val(String(cl.skills)) +
-    pipe() + lbl('Agents: ')  + val(String(cl.agents)) +
-    pipe() + lbl('MCPs: ')    + val(String(mcpTotal)) +
+    PURPLE  + `●` + RESET + ` ` + lbl('Plugins: ') + val(String(cl.plugins)) +
+    `  ` + SKL_CYAN + `◆` + RESET + ` ` + lbl('Skills: ')  + val(String(cl.skills)) +
+    `  ` + AMBER    + `○` + RESET + ` ` + lbl('Agents: ')  + val(String(cl.agents)) +
+    `  ` + SKL_CYAN + `○` + RESET + ` ` + lbl('MCPs: ')    + val(String(mcpTotal)) +
     ` ` + DIM_GRAY + `(G:${cl.mcpGlobal} L:${cl.mcpLocal})` + RESET
   );
 
