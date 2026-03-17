@@ -2,23 +2,9 @@
 
 A live status panel that renders at the bottom of every Claude Code response. Shows context usage, API costs, weather, git state, and environment info at a glance.
 
-```
-  — | wall-e STATUSLINE |
-LOC: Stockholm, SE | 17:27 | 7°C Sunny
-ENV: claude-sonnet-4-6 (200K) | CC: 2.1.77 | SK: 7 | WF: 1 | Hooks: 5
+<img width="614" height="229" alt="image" src="https://github.com/user-attachments/assets/07b14fc3-3eab-4de0-96bb-36de6ada6b47" />
 
-● CONTEXT: [████████████        ] [61%]
 
-◆ USAGE:  5H: 109% ↻ 18:00 | WK: 9% ↻ Fri 00:00
-
-◆ PWD: my-project | Branch: main | Age: 2d | New: 3
-
-◆ "Ship it." — Unknown
-
-● Plugins: 0  ◆ Skills: 7  ○ Agents: 19  ○ MCPs: 0 (G:0 L:0)
-TOKENS: Today: 11,938,423 | Month: 11,938,423 | Last Mo: 0 | Total: 11,938,423
-COSTS:  Today: $5.48 | Month: $5.48 | Last Mo: $0.00 | Ratio: 2,178,166 | Total: $5.48
-```
 
 ## Requirements
 
